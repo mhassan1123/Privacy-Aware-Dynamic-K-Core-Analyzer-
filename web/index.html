@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Privacy-Aware Dynamic K-Core Analyzer (C++ backend)</title>
+<title>Privacy-Aware Dynamic K-Core Analyzer</title>
 <style>
 :root{--bg:#f6f7f9;--card:#fff;--ink:#1c2230;--mute:#667085;--line:#e3e6ec;--acc:#4f46e5;--acc2:#0ea5e9;--bad:#dc2626;--ok:#16a34a;
 box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -17,7 +17,7 @@ main{max-width:1200px;margin:auto;padding:10px 20px 30px;display:grid;grid-templ
 .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
 .stat{background:var(--bg);border-radius:8px;padding:8px 10px}.stat b{display:block;font-size:20px}.stat span{color:var(--mute);font-size:11px;text-transform:uppercase;letter-spacing:.04em}
-canvas{width:100%;height:400px;display:block;border-radius:8px;background:var(--bg);border:1px solid var(--line)}
+canvas{width:100%;height:440px;display:block;border-radius:8px;background:var(--bg);border:1px solid var(--line)}
 .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0}
 button,input,textarea{font:inherit;color:var(--ink)}
 button{background:var(--acc);color:#fff;border:0;border-radius:8px;padding:7px 12px;cursor:pointer}
@@ -41,7 +41,7 @@ svg text{fill:var(--mute);font-size:10px}
 </style></head>
 <body>
 <header><h1>Privacy-Aware Dynamic K-Core Analyzer</h1>
-<p>Every number on this page is computed by your C++ code, running in <code>server.cpp</code>. <span id="st" style="font-weight:600">● checking server…</span></p></header>
+<p>Browser frontend for the C++ analyzer — same peeling algorithm, Laplace mechanism, and snapshot stream, all computed locally.</p></header>
 <main>
 <section class="card">
   <div class="stats">
@@ -81,7 +81,7 @@ svg text{fill:var(--mute);font-size:10px}
   <div class="panel" id="p-upd">
     <h3>6 · Process update stream ("ADD u v" / "REMOVE u v")</h3>
     <textarea id="ups" spellcheck="false"></textarea>
-    <div class="row"><label>Batch size</label><input type="number" id="bs" value="2" min="1">
+    <div class="row"><label>Batch size</label><input type="number" id="bs" value="3" min="1">
     <button id="run">Process stream</button><button class="sec" id="exp">9 · Export CSV</button></div>
     <svg id="ch" viewBox="0 0 440 150" width="100%" style="display:none"></svg>
     <div class="tw"><table id="snaps"></table></div>
@@ -98,18 +98,33 @@ svg text{fill:var(--mute);font-size:10px}
 
 <script>
 const $=id=>document.getElementById(id);
-const SAMPLE="1\t2\n1\t3\n1\t4\n2\t3\n2\t4\n3\t4\n5\t6\n5\t3\n6\t4\n7\t6";
-const UPS="ADD\t1\t5\nADD\t3\t7\nREMOVE\t2\t4\nADD\t8\t9\nREMOVE\t1\t3\nADD\t8\t1\nADD\t9\t1\nADD\t8\t2\nADD\t9\t2\nADD\t8\t3";
+const SAMPLE="1\t2\n1\t3\n1\t4\n1\t5\n1\t6\n1\t7\n1\t8\n2\t3\n2\t4\n2\t5\n2\t6\n2\t7\n2\t8\n2\t35\n2\t39\n3\t4\n3\t5\n3\t6\n3\t7\n3\t8\n3\t10\n3\t33\n4\t5\n4\t6\n4\t7\n4\t8\n5\t6\n5\t7\n5\t8\n6\t7\n6\t8\n7\t8\n7\t18\n8\t12\n9\t10\n9\t12\n9\t13\n9\t14\n9\t15\n9\t39\n10\t11\n10\t13\n10\t14\n10\t15\n10\t34\n10\t36\n11\t12\n11\t13\n11\t15\n11\t34\n12\t13\n12\t14\n12\t15\n13\t14\n13\t35\n13\t39\n14\t15\n14\t20\n16\t17\n16\t18\n16\t19\n16\t20\n16\t21\n16\t40\n17\t18\n17\t19\n17\t20\n17\t21\n17\t32\n18\t19\n18\t20\n18\t21\n18\t36\n19\t20\n19\t21\n19\t28\n19\t34\n20\t21\n21\t25\n22\t23\n22\t24\n22\t25\n22\t26\n23\t24\n23\t25\n23\t26\n24\t25\n24\t26\n24\t32\n25\t26\n26\t29\n26\t38\n27\t28\n27\t30\n27\t31\n27\t33\n28\t29\n28\t30\n28\t31\n29\t30\n29\t31\n30\t31\n31\t32\n31\t37\n33\t38\n35\t36\n35\t37\n38\t40";
+const UPS="ADD\t22\t37\nADD\t24\t28\nREMOVE\t6\t7\nREMOVE\t3\t7\nADD\t32\t33\nREMOVE\t19\t34\nADD\t26\t37\nREMOVE\t16\t40\nADD\t1\t31\nADD\t23\t33\nREMOVE\t24\t32\nADD\t2\t25\nADD\t2\t34\nADD\t25\t35\nADD\t21\t34";
 $('edges').value=SAMPLE;$('ups').value=UPS;
-let adj=new Map(),pos=new Map(),snaps=[],lastCores=new Map(),S=null;
+
+let adj=new Map(),pos=new Map(),snaps=[],lastCores=new Map();
+const addV=v=>{if(!adj.has(v))adj.set(v,new Set())};
+function addEdge(u,v){addV(u);addV(v);if(u===v)return;adj.get(u).add(v);adj.get(v).add(u)}
+function rmEdge(u,v){if(adj.has(u))adj.get(u).delete(v);if(adj.has(v))adj.get(v).delete(u)}
+const edgeCount=()=>{let s=0;adj.forEach(x=>s+=x.size);return s/2};
+function parse(t){return t.split(/\r?\n/).map(l=>l.trim()).filter(l=>l&&l[0]!=='#').map(l=>l.replace(/,/g,' ').split(/\s+/))}
+
+// Core decomposition (peeling): same result as kcore.cpp
+function cores(){const d=new Map(),c=new Map();adj.forEach((s,v)=>d.set(v,s.size));
+ let k=0;const rem=new Set(d.keys());
+ while(rem.size){const q=[...rem].filter(v=>d.get(v)<=k);if(!q.length){k++;continue}
+  while(q.length){const v=q.pop();if(!rem.has(v))continue;rem.delete(v);c.set(v,k);
+   adj.get(v).forEach(u=>{if(rem.has(u)){d.set(u,d.get(u)-1);if(d.get(u)<=k)q.push(u)}})}}
+ return c}
 const cnt=(c,k)=>{let n=0;c.forEach(x=>{if(x>=k)n++});return n};
-// Talk to the C++ server: send a request, get JSON back
-async function api(path,method='GET',body){
-  const r=await fetch(path,{method,body,headers:body?{'Content-Type':'text/plain'}:{}});
-  const t=await r.text();if(!r.ok)throw new Error(t||('HTTP '+r.status));return JSON.parse(t)}
-function status(ok){const s=$('st');s.textContent=ok?'● connected to C++ server':'● C++ server not reachable — start server (see instructions)';s.style.color=ok?'var(--ok)':'var(--bad)'}
-function msg(t,cls=''){const m=$('msg');m.textContent=t;m.className='msg '+cls}
-async function run(fn){try{await fn();status(true)}catch(e){if(e instanceof TypeError)status(false);msg(e instanceof TypeError?'Cannot reach the C++ server.':e.message,'err')}}
+function snapshot(label){const t0=performance.now();const c=cores();const ms=performance.now()-t0;
+ let mx=0;c.forEach(x=>mx=Math.max(mx,x));
+ return{label,V:adj.size,E:edgeCount(),c3:cnt(c,3),c5:cnt(c,5),mx,ms}}
+
+// Laplace mechanism (inverse-CDF, same as PrivacyManager.cpp)
+function lap(b){if(b<=0)return 0;const u=Math.random()-.5;return -b*Math.sign(u||1)*Math.log(1-2*Math.abs(u))}
+const priv=(x,s,e)=>x+lap(s/e);
+
 // ---------- drawing ----------
 const cv=$('cv'),ctx=cv.getContext('2d');let raf=0;
 function css(n){return getComputedStyle(document.documentElement).getPropertyValue(n).trim()}
@@ -138,30 +153,37 @@ function draw(){const r=devicePixelRatio||1,W=cv.clientWidth,H=cv.clientHeight;
 addEventListener('resize',draw);
 matchMedia('(prefers-color-scheme:dark)').addEventListener('change',draw);
 
-// ---------- show what the server sent ----------
-function apply(st,fresh){S=st;adj=new Map();st.vertices.forEach(v=>adj.set(v.id,new Set()));
- st.edges.forEach(([u,v])=>{adj.get(u).add(v);adj.get(v).add(u)});
- lastCores=new Map(st.vertices.map(v=>[v.id,v.core]));
- $('sV').textContent=st.V;$('sE').textContent=st.E;$('sM').textContent=st.max;$('sT').textContent=st.ms.toFixed(3)+' ms';
- $('kr').max=Math.max(3,st.max);if(+$('kr').value>+$('kr').max)$('kr').value=$('kr').max;$('kv').textContent=$('kr').value;
- $('leg').innerHTML=Array.from({length:st.max+1},(_,k)=>`<span><i style="background:${colorFor(k)}"></i>core ${k}</span>`).join('');
- $('coreSum').innerHTML='<tr><th>Metric</th><th>Value</th></tr>'+Array.from({length:st.max},(_,i)=>`<tr><td>${i+1}-Core</td><td>${cnt(lastCores,i+1)} vertices</td></tr>`).join('')+`<tr><td><b>Maximum Core</b></td><td><b>${st.max}</b></td></tr>`;
- $('coreTab').innerHTML='<tr><th>Vertex</th><th>Degree</th><th>Core</th></tr>'+[...st.vertices].sort((a,b)=>b.core-a.core||a.id-b.id).map(v=>`<tr><td>${v.id}</td><td>${v.deg}</td><td>${v.core}</td></tr>`).join('');
- layout(fresh)}
-// ---------- events: each button = one request to the server ----------
+// ---------- refresh ----------
+function msg(t,cls=''){const m=$('msg');m.textContent=t;m.className='msg '+cls}
+function refresh(fresh){const s=snapshot('now');lastCores=cores();
+ $('sV').textContent=s.V;$('sE').textContent=s.E;$('sM').textContent=s.mx;$('sT').textContent=s.ms.toFixed(2)+' ms';
+ $('kr').max=Math.max(3,s.mx);if(+$('kr').value>+$('kr').max)$('kr').value=$('kr').max;$('kv').textContent=$('kr').value;
+ $('leg').innerHTML=Array.from({length:s.mx+1},(_,k)=>`<span><i style="background:${colorFor(k)}"></i>core ${k}</span>`).join('');
+ renderCore(s);layout(fresh)}
+function renderCore(s){const c=lastCores;
+ $('coreSum').innerHTML=`<tr><th>Metric</th><th>Value</th></tr><tr><td>Max core number</td><td>${s.mx}</td></tr><tr><td>3-core size</td><td>${s.c3}</td></tr><tr><td>5-core size</td><td>${s.c5}</td></tr>`+
+  Array.from({length:s.mx},(_,i)=>`<tr><td>${i+1}-Core</td><td>${cnt(c,i+1)} vertices</td></tr>`).join('');
+ $('coreTab').innerHTML='<tr><th>Vertex</th><th>Degree</th><th>Core</th></tr>'+[...c.entries()].sort((a,b)=>b[1]-a[1]||a[0]-b[0]).map(([v,k])=>`<tr><td>${v}</td><td>${adj.get(v).size}</td><td>${k}</td></tr>`).join('')}
+
+// ---------- events ----------
 $('tabs').onclick=e=>{const t=e.target.dataset.t;if(!t)return;document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b===e.target));
  document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('on',p.id==='p-'+t))};
 $('kr').oninput=()=>{$('kv').textContent=$('kr').value;draw()};
-$('load').onclick=()=>run(async()=>{const st=await api('/api/load','POST',$('edges').value);snaps=[];apply(st,true);
- msg(`Graph loaded successfully! (${st.V} vertices, ${st.E} edges)`,'ok')});
+$('load').onclick=()=>{adj=new Map();let n=0;parse($('edges').value).forEach(r=>{const u=+r[0],v=+r[1];if(Number.isInteger(u)&&Number.isInteger(v)){addEdge(u,v);n++}});
+ if(!adj.size)return msg('No valid edges found.','err');snaps=[snapshot('T0 (Base)')];refresh(true);msg(`Graph loaded successfully! (${adj.size} vertices, ${edgeCount()} edges)`,'ok')};
 $('sample').onclick=()=>{$('edges').value=SAMPLE;$('load').click()};
 $('file').onchange=async e=>{const f=e.target.files[0];if(f){$('edges').value=await f.text();$('load').click()}};
-function edit(a){run(async()=>{const u=$('eu').value,v=$('ev').value;
- const st=await api(`/api/edge?action=${a}&u=${encodeURIComponent(u)}&v=${encodeURIComponent(v)}`,'POST');apply(st,false);
- msg(`${a==='ADD'?'Added':'Removed'} edge (${u}, ${v}) successfully.`,'ok')})}
+function edit(act){const u=parseInt($('eu').value),v=parseInt($('ev').value);if(isNaN(u)||isNaN(v))return msg('Invalid input.','err');
+ if(!adj.size)return msg('Graph is empty! Please load network first.','err');
+ act==='ADD'?addEdge(u,v):rmEdge(u,v);refresh(false);msg(`${act==='ADD'?'Added':'Removed'} edge (${u}, ${v}) successfully.`,'ok')}
 $('add').onclick=()=>edit('ADD');$('rem').onclick=()=>edit('REMOVE');
-$('run').onclick=()=>run(async()=>{const r=await api('/api/stream?batch='+(parseInt($('bs').value)||2),'POST',$('ups').value);
- snaps=r.snaps;renderSnaps();apply(r.state,false)});
+
+$('run').onclick=()=>{if(!adj.size)return alert('Load a network first.');
+ const bs=Math.max(1,parseInt($('bs').value)||2);snaps=[snapshot('T0 (Base)')];let n=0,i=1;
+ parse($('ups').value).forEach(r=>{const a=r[0].toUpperCase(),u=+r[1],v=+r[2];if(!['ADD','REMOVE'].includes(a)||isNaN(u)||isNaN(v))return;
+  a==='ADD'?addEdge(u,v):rmEdge(u,v);if(++n%bs===0)snaps.push(snapshot('T'+i++))});
+ if(n%bs!==0)snaps.push(snapshot('T'+i));
+ refresh(false);renderSnaps()};
 function renderSnaps(){$('snaps').innerHTML='<tr><th>Time</th><th>Vertices</th><th>Edges</th><th>3-Core</th><th>5-Core</th><th>Max Core</th><th>Time (ms)</th></tr>'+
  snaps.map(s=>`<tr><td>${s.label}</td><td>${s.V}</td><td>${s.E}</td><td>${s.c3}</td><td>${s.c5}</td><td>${s.mx}</td><td>${s.ms.toFixed(3)}</td></tr>`).join('');
  const ch=$('ch');ch.style.display='block';const W=440,H=150,n=snaps.length,mx=Math.max(1,...snaps.flatMap(s=>[s.c3,s.c5,s.mx]));
@@ -170,19 +192,25 @@ function renderSnaps(){$('snaps').innerHTML='<tr><th>Time</th><th>Vertices</th><
  ch.innerHTML=`<line x1="30" y1="${H-24}" x2="${W-10}" y2="${H-24}" stroke="${css('--line')}"/>`+ln('c3',css('--acc'))+ln('c5',css('--acc2'))+ln('mx','#f59e0b')+
   snaps.map((s,i)=>`<text x="${X(i)}" y="${H-10}" text-anchor="middle">${s.label.split(' ')[0]}</text>`).join('')+
   `<text x="30" y="12" style="fill:${css('--acc')}">● 3-core</text><text x="90" y="12" style="fill:${css('--acc2')}">● 5-core</text><text x="150" y="12" style="fill:#f59e0b">● max core</text>`}
-$('exp').onclick=()=>run(async()=>{const r=await api('/api/export');snaps=r.snaps;renderSnaps();
- const t=$('csv');t.style.display='block';t.value=r.csv;msg('Saved to results/dynamic_results.csv by your exportResultsToCSV().','ok')});
-const box=h=>$('privOut').innerHTML=h;
-$('pa').onclick=()=>run(async()=>{const r=await api('/api/privacy?eps='+encodeURIComponent($('eps').value));
- box(`<h3>Laplace generator validation (10000 samples, scale b = ${r.b})</h3><div class="tw"><table><tr><th>Metric</th><th>Empirical</th><th>Theoretical</th></tr>
- <tr><td>Mean</td><td>${r.mean}</td><td>0</td></tr><tr><td>Variance</td><td>${r.var}</td><td>${r.theoVar}</td></tr>
- <tr><td>Minimum</td><td>${r.min}</td><td>−∞</td></tr><tr><td>Maximum</td><td>${r.max}</td><td>+∞</td></tr></table></div>
- <h3>3-core size</h3><div class="row" style="gap:24px"><div><span style="color:var(--mute)">Exact</span><div class="big">${r.exact}</div></div>
- <div><span style="color:var(--mute)">Private</span><div class="big">${(+r.private).toFixed(1)}</div></div><div><span style="color:var(--mute)">Error</span><div class="big">${(+r.error).toFixed(1)}</div></div></div>`)});
-$('cmp').onclick=()=>run(async()=>{const r=await api('/api/compare');const mx=Math.max(1,...r.rows.map(x=>x.error));
- box(`<h3>Target: 3-core size (exact = ${r.exact}) — fresh noise each run</h3><div class="tw"><table><tr><th>ε</th><th>Exact</th><th>Private</th><th>Error</th><th style="width:30%"></th></tr>`+
- r.rows.map(x=>`<tr><td>${x.eps.toFixed(1)}</td><td>${r.exact}</td><td>${(+x.private).toFixed(1)}</td><td>${(+x.error).toFixed(1)}</td><td><div class="bar" style="width:${x.error/mx*100}%"></div></td></tr>`).join('')+`</table></div>`)});
-// on page open: ask the server what it currently holds
-run(async()=>{const st=await api('/api/state');if(st.V>0)apply(st,true);else msg('Server connected. Click "Load network" to begin.')});
+$('exp').onclick=()=>{if(!snaps.length&&adj.size)snaps=[snapshot('Current State')];if(!snaps.length)return alert('Nothing to export.');
+ renderSnaps();const t=$('csv');t.style.display='block';
+ t.value='Time,Vertices,Edges,3-Core,5-Core,MaxCore,Runtime_ms\n'+snaps.map(s=>[s.label,s.V,s.E,s.c3,s.c5,s.mx,s.ms.toFixed(3)].join(',')).join('\n');t.select()};
+
+function needGraph(){if(!adj.size){$('privOut').innerHTML='<div class="msg err">Graph is empty! Please load network first.</div>';return false}return true}
+$('pa').onclick=()=>{if(!needGraph())return;const e=parseFloat($('eps').value);if(!(e>0)){$('privOut').innerHTML='<div class="msg err">Invalid epsilon value.</div>';return}
+ const N=10000,b=1/e,xs=Array.from({length:N},()=>lap(b)),m=xs.reduce((a,x)=>a+x,0)/N,v=xs.reduce((a,x)=>a+(x-m)**2,0)/N;
+ const ex=cnt(cores(),3),pv=priv(ex,1,e);
+ $('privOut').innerHTML=`<h3>Laplace generator validation (${N} samples, scale b = ${b.toFixed(4)})</h3><div class="tw"><table><tr><th>Metric</th><th>Empirical</th><th>Theoretical</th></tr>
+ <tr><td>Mean</td><td>${m.toFixed(4)}</td><td>0</td></tr><tr><td>Variance</td><td>${v.toFixed(4)}</td><td>${(2*b*b).toFixed(4)}</td></tr>
+ <tr><td>Minimum</td><td>${Math.min(...xs).toFixed(4)}</td><td>−∞</td></tr><tr><td>Maximum</td><td>${Math.max(...xs).toFixed(4)}</td><td>+∞</td></tr></table></div>
+ <h3>3-core size</h3><div class="row" style="gap:24px"><div><span style="color:var(--mute)">Exact</span><div class="big">${ex}</div></div>
+ <div><span style="color:var(--mute)">Private</span><div class="big">${pv.toFixed(1)}</div></div><div><span style="color:var(--mute)">Error</span><div class="big">${Math.abs(pv-ex).toFixed(1)}</div></div></div>`};
+$('cmp').onclick=()=>{if(!needGraph())return;const ex=cnt(cores(),3),rows=[0.5,1,2,5].map(e=>{const p=priv(ex,1,e);return[e,p,Math.abs(p-ex)]});
+ const mx=Math.max(1,...rows.map(r=>r[2]));
+ $('privOut').innerHTML=`<h3>Target: 3-core size (exact = ${ex}) — fresh noise each run</h3><div class="tw"><table><tr><th>ε</th><th>Exact</th><th>Private</th><th>Error</th><th style="width:30%"></th></tr>`+
+  rows.map(r=>`<tr><td>${r[0].toFixed(1)}</td><td>${ex}</td><td>${r[1].toFixed(1)}</td><td>${r[2].toFixed(1)}</td><td><div class="bar" style="width:${r[2]/mx*100}%"></div></td></tr>`).join('')+
+  `</table></div><div class="msg">Smaller ε → stronger privacy → larger expected error (E|noise| = 1/ε).</div>`};
+
+$('load').click();
 </script>
 </body></html>
