@@ -1,0 +1,40 @@
+K-CORE ANALYZER - HOW TO RUN
+============================
+
+FOLDER (everything lives together, e.g. C:\projects\folder):
+  main.cpp, graph.cpp, kcore.cpp, DynamicGraph.cpp, PrivacyManager.cpp  (+ .h files)   <- your code
+  server.cpp, httplib.h                                                  <- web server
+  build.bat, run.bat, HOW_TO_RUN.txt                                     <- helper files
+  web\index.html                                                         <- the web page
+  data\   results\                                                       <- your data folders
+
+EVERY DAY (nothing changed in C++):
+  1. Double-click run.bat
+  2. The browser opens http://localhost:8080 by itself
+     (if it doesn't, open any browser and type: localhost:8080)
+  3. Click "Load network" and use the tabs
+  4. To stop: close the black window (or press Ctrl+C in it)
+
+AFTER YOU CHANGE ANY C++ FILE:
+  1. Close the black server window if it is open
+  2. Double-click build.bat   (wait for "BUILD OK")
+  3. Double-click run.bat
+
+FIRST TIME / MANUAL COMMANDS (same as the .bat files do):
+  Open a terminal in the folder (type cmd in the folder's address bar), then:
+    g++ -std=c++17 -DNOMINMAX -D_WIN32_WINNT=0x0A00 server.cpp DynamicGraph.cpp kcore.cpp graph.cpp PrivacyManager.cpp -o server.exe -lws2_32
+    server.exe
+  Then open: http://localhost:8080
+
+PROBLEMS:
+  "server not reachable" in the page   -> the black server window is closed; run run.bat
+  "port 8080 in use"                   -> an old server window is still open; close it
+  BUILD FAILED                         -> read the error; fix the C++ line it names
+  Page shows old results after C++ edit-> you forgot build.bat
+
+NOTES:
+  - data\_uploaded_edges.csv and data\_uploaded_updates.csv are temporary files the
+    server creates. Safe to delete.
+  - results\dynamic_results.csv is written by the Export CSV button.
+  - Process stream applies updates to the CURRENT graph. Click "Load network" first
+    to start from a clean base graph.
