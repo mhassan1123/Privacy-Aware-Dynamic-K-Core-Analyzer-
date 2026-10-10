@@ -2,13 +2,7 @@
 
 A C++ project that finds the **k-core structure** of a graph, keeps it up to date as edges are **added and removed**, and reports results with **differential privacy** (Laplace noise). It now comes with a **web interface** that runs on top of the C++ code, so you can explore everything in the browser without touching the console menu.
 
-![Demo](docs/demo.gif)
-
-▶ [Watch the full walkthrough video (MP4, about 1 minute)](docs/demo.mp4)
-
-<!-- Live demo link (add your Vercel URL here) -->
-
----
+<img width="720" height="450" alt="demo" src="https://github.com/user-attachments/assets/8bc590b5-4934-4717-b91c-7060a479ebaa" />
 
 ## What it does
 
