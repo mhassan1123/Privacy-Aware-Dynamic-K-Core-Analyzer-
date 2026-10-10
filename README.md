@@ -30,32 +30,32 @@ A C++ project that finds the **k-core structure** of a graph, keeps it up to dat
 ### Network overview
 Vertices are coloured by core number (blue = low, red = high). The slider fades out everything below the chosen k, so the inner cores stand out.
 
-![Overview](docs/screenshots/01-overview.png)
+<img width="1920" height="1230" alt="01-overview" src="https://github.com/user-attachments/assets/84068092-57cf-43f3-b7a0-ec8886af1273" />
 
 ### K-core analysis
 Size of every k-core and the degree and core number of each vertex.
 
-![K-Core](docs/screenshots/02-kcore-highlight.png)
+<img width="1920" height="1286" alt="02-kcore-highlight" src="https://github.com/user-attachments/assets/096bee69-1d86-438f-8a74-ec80e4df7fc2" />
 
 ### Dynamic update stream
 Each batch of updates produces a snapshot. The chart tracks how the 3-core, 5-core and maximum core change over time.
 
-![Update stream](docs/screenshots/03-update-stream.png)
+<img width="1920" height="1230" alt="03-update-stream" src="https://github.com/user-attachments/assets/668d9fe9-fc4f-4017-93f1-82b50f15d9fc" />
 
 ### Privacy analysis
 Checks 10,000 Laplace samples against the theoretical mean and variance, then releases the 3-core size with noise.
 
-![Privacy analysis](docs/screenshots/04-privacy-analysis.png)
+<img width="1920" height="1230" alt="04-privacy-analysis" src="https://github.com/user-attachments/assets/e9f10719-63c7-45e2-8b96-3b729962ce2a" />
 
 ### Exact vs private comparison
 Smaller ε means stronger privacy and a larger expected error.
 
-![Privacy comparison](docs/screenshots/05-privacy-compare.png)
+<img width="1920" height="1230" alt="05-privacy-compare" src="https://github.com/user-attachments/assets/d5d7e113-b398-4250-8c6c-cc3a3514ab6a" />
 
 ### Dark theme
 The interface follows your system's light or dark setting.
 
-![Dark theme](docs/screenshots/06-dark-theme.png)
+<img width="1920" height="1230" alt="06-dark-theme" src="https://github.com/user-attachments/assets/e36252d1-f4cd-4539-ac0c-7c882cfef3e2" />
 
 ---
 
